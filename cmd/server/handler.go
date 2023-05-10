@@ -1,3 +1,5 @@
+// Completar los métodos del handler para que pasen las pruebas. (desde return func etc)
+
 package server
 
 import (
@@ -28,6 +30,15 @@ func (h *Handler) ConfigureShark() gin.HandlerFunc {
 	}
 
 	return func(context *gin.Context) {
+		var req request
+		err := context.ShouldBindJSON(&req)
+		if err != nil {
+			context.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		
+		h.shark.Configure([2]float64{req.XPosition, req.YPosition}, req.Speed)
+		context.JSON(200, response{Success: true})
 	}
 }
 
@@ -42,6 +53,15 @@ func (h *Handler) ConfigurePrey() gin.HandlerFunc {
 	}
 
 	return func(context *gin.Context) {
+		var req request
+		err := context.ShouldBindJSON(&req)
+		if err != nil {
+			context.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		
+		h.prey.SetSpeed(req.Speed)
+		context.JSON(200, response{Success: true})
 	}
 }
 
@@ -55,5 +75,12 @@ func (h *Handler) SimulateHunt() gin.HandlerFunc {
 	}
 
 	return func(context *gin.Context) {
+		err, timeToCatch := h.shark.Hunt(h.prey)
+		if err != nil {
+			context.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		
+		context.JSON(200, response{Success: true, Time: timeToCatch})
 	}
 }
