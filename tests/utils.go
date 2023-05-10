@@ -1,3 +1,4 @@
+// Agrego las últimas 3 funciones adicionales para ayudar a realizar las pruebas
 package tests
 
 import (
@@ -34,4 +35,30 @@ func createRequestTest(method string, url string, body string) (*http.Request, *
 
 	req.Header.Add("Content-Type", "application/json")
 	return req, httptest.NewRecorder()
+}
+
+func performRequest(handler http.Handler, method, path string, body interface{}) *httptest.ResponseRecorder {
+	bodyReader := strings.NewReader("")
+	if body != nil {
+		bodyBytes, _ := json.Marshal(body)
+		bodyReader = strings.NewReader(string(bodyBytes))
+	}
+	
+	req, _ := http.NewRequest(method, path, bodyReader)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+	
+	return w
+}
+
+func assertStatusCode(t *testing.T, response *httptest.ResponseRecorder, expectedStatusCode int) {
+	if response.Body.String() != expectedStatusCode {
+		t.Fatalf("Expected status code %d but got %d\n", expectedStatusCode, response.Code)
+	}
+}
+
+func assertJSONResponse(t *testing.T, response *httptest.ResponseRecorder, expectedBody string) {
+	if response.Body.String() != expectedBody {
+		t.Fatalf("Expected body %s but got %s\n", expectedBody, response.Body.String())
+	}
 }
