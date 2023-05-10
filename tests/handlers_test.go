@@ -110,3 +110,37 @@ func TestSharkCantCatchPrey(t *testing.T) {
 }
 			 
 func TestHunt(t *testing.T) {
+	sim := simulator.NewCatchSimulator(35.4)
+	whiteShark := shark.CreateWhiteShark(sim)
+	tuna := prey.CreateTuna()
+	tuna.SetSpeed(23.4)
+	
+	whiteShark.Configure([2]float64{100, 200}, 34.5)
+	err, timeToCatch := whiteShark.Hunt(tuna)
+	
+	if err != nil {
+		t.Fatalf("Error should be nil, but got: %v", err)
+	}
+	if timeToCatch != 24 {
+		t.Fatalf("Time to catch should be 24, but got: %v", timeToCatch)
+	}
+}
+			 
+func TestConfigureSharkInvalidType(t *testing.T) {
+	sim := simulator.NewCatchSimulator(35.4)
+	whiteShark := shark.CreateWhiteShark(sim)
+	tuna := prey.CreateTuna()
+	
+	handler := NewHandler(whiteShark, tuna)
+	
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/v1/shark", strings.NewReader(`{"x_position": "not_a_float64", "y_position": 200, "speed": 34.5}`))
+	req.Header.Set("Content-Type", "application/json")
+	
+	handler.ConfigureShark()(w, req)
+	
+	resp := w.Result()
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Expected status code %v but got %v", http.StatusBadRequest, resp.StatusCode)
+	}
+}
