@@ -51,6 +51,13 @@ func TestGetAllBySeller_Error(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestNewRepository(t *testing.T) {
+	repo := NewRepository()
+	if repo == nil {
+		t.Error("expected repository to not be nil")
+	}
+}
+
 func TestNewService(t *testing.T) {
 	repo := new(MockRepository)
 	svc := NewService(repo)
